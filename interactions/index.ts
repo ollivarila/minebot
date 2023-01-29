@@ -1,6 +1,8 @@
 import verifyRequest from "../verifyRequest";
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
 import { InteractionResponseType, InteractionType } from "discord-interactions";
+import handleInteractions from "./interactionHandler";
+import { InteractionResponse } from "../types";
 
 const interactionsHandler: AzureFunction = async (
   context: Context,
@@ -26,11 +28,15 @@ const interactionsHandler: AzureFunction = async (
 
   if (type === InteractionType.PING) {
     return {
+      status: 200,
       body: {
         type: InteractionResponseType.PONG,
+        data: undefined,
       },
     };
   }
+
+  return await handleInteractions(req);
 };
 
 export default interactionsHandler;
