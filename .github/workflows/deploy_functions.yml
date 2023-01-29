@@ -1,0 +1,31 @@
+name: Deploy functions to Azure
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AZURE_FUNCTIONAPP_NAME: minebot
+  NODE_VERSION: "18.x"
+
+jobs:
+  build-and-deploy-minebot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v3"
+      - name: Setup Node ${{ env.NODE_VERSION }} Environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: "Install dependencies"
+        run: "cd ./apps/minebot && npm install"
+      - name: "Build"
+        run: "cd ./apps/minebot && npm run build"
+      - name: "Deploy to Azure Functions App"
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: "./apps/minebot"
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
