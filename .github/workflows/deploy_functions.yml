@@ -20,12 +20,12 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: "Install dependencies"
-        run: "cd ./apps/minebot && npm install"
+        run: "npm install"
       - name: "Build"
-        run: "cd ./apps/minebot && npm run build"
+        run: "npm run build"
       - name: "Deploy to Azure Functions App"
         uses: Azure/functions-action@v1
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-          package: "./apps/minebot"
+          package: "."
           publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
