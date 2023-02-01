@@ -1,38 +1,36 @@
 import { HttpRequest } from "@azure/functions";
 import { AxiosResponse } from "axios";
 import { InteractionType } from "discord-interactions";
-import { requestAction } from "../utils/requests";
-
-
+import { InteractionResponseType } from "discord.js";
+import { ContainerAction, requestAction } from "../utils/requests";
 
 enum DiscordResponseType {
   content,
-  embed
+  embed,
 }
 
 const getDiscordResponse = (data: Object, responseType: number): Object => {
-
-  if(responseType === DiscordResponseType.content)
-  return {
-    body: {
-      data: {
-        content: data
-      }
-    }
-  }
-
-  if(responseType === DiscordResponseType.embed) {
+  if (responseType === DiscordResponseType.content)
     return {
       body: {
+        type: InteractionResponseType.ChannelMessageWithSource,
         data: {
-          embeds: [data]
-        }
-      }
+          content: data,
+        },
+      },
+    };
 
-    }
+  if (responseType === DiscordResponseType.embed) {
+    return {
+      body: {
+        type: InteractionResponseType.ChannelMessageWithSource,
+        data: {
+          embeds: [data],
+        },
+      },
+    };
   }
-
-} 
+};
 
 const handleInteractions = async (req: HttpRequest): Promise<Object> => {
   const { type } = req.body;
@@ -64,26 +62,49 @@ const handleApplicationCommands = async (req: HttpRequest): Promise<Object> => {
   }
 };
 
-const handleServerUp = async (req: HttpRequest): Promise<Object> => {
-  const response: AxiosResponse = await requestAction('start')
+const doRequest = async (action: ContainerAction): Promise<Object> => {
+  try {
+    const response: AxiosResponse = await requestAction("start");
 
+    return getDiscordResponse(
+      response.data.message,
+      DiscordResponseType.content
+    );
+  } catch (error) {
+    return getDiscordResponse(error.message, DiscordResponseType.content);
+  }
+};
+
+const handleServerUp = async (req: HttpRequest): Promise<Object> => {
+  return doRequest("start");
 };
 
 const handleServerDown = async (req: HttpRequest): Promise<Object> => {
-  const response: AxiosResponse = await requestAction('stop')
-
-  
+  return doRequest("stop");
 };
 
 const handleGetIp = async (req: HttpRequest): Promise<Object> => {
-  const response: AxiosResponse = await requestAction('status')
-  
+  try {
+    const response: AxiosResponse = await requestAction("status");
+    return getDiscordResponse(
+      `Server ip: ${response.data.ip}`,
+      DiscordResponseType.content
+    );
+  } catch (error) {
+    return getDiscordResponse(error.message, DiscordResponseType.content);
+  }
 };
 
 const handleGetStatus = async (req: HttpRequest): Promise<Object> => {
-  const response: AxiosResponse = await requestAction('status')
-  
-
+  try {
+    const response: AxiosResponse = await requestAction("status");
+    return getDiscordResponse(
+      `Server status: ${response.data.state}\nServer ip: ${response.data.ip}`,
+      DiscordResponseType.content
+    );
+  } catch (error) {
+    return getDiscordResponse(error.message, DiscordResponseType.content);
+  }
 };
 
 export default handleInteractions;
