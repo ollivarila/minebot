@@ -44,7 +44,7 @@ export const dispatchContainerAction = async (
     return axios.get(url, { headers });
   }
 
-  const url: string = `https://management.azure.com/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.ContainerInstance/containerGroups/${CONTAINER_GROUP}/${action}?api-version=2022-10-01-preview`;
+  const url: string = `https://management.azure.com/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.ContainerInstance/containerGroups/${CONTAINER_GROUP}/?action=${action}&api-version=2022-10-01-preview`;
   return axios.put(url, { headers });
 };
 

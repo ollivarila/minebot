@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["post"],
-      "route": "server/{action:string}"
+      "route": "server"
     },
     {
       "type": "http",
