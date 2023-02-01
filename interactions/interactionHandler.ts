@@ -1,5 +1,38 @@
 import { HttpRequest } from "@azure/functions";
+import { AxiosResponse } from "axios";
 import { InteractionType } from "discord-interactions";
+import { requestAction } from "../utils/requests";
+
+
+
+enum DiscordResponseType {
+  content,
+  embed
+}
+
+const getDiscordResponse = (data: Object, responseType: number): Object => {
+
+  if(responseType === DiscordResponseType.content)
+  return {
+    body: {
+      data: {
+        content: data
+      }
+    }
+  }
+
+  if(responseType === DiscordResponseType.embed) {
+    return {
+      body: {
+        data: {
+          embeds: [data]
+        }
+      }
+
+    }
+  }
+
+} 
 
 const handleInteractions = async (req: HttpRequest): Promise<Object> => {
   const { type } = req.body;
@@ -31,12 +64,26 @@ const handleApplicationCommands = async (req: HttpRequest): Promise<Object> => {
   }
 };
 
-const handleServerUp = async (req: HttpRequest): Promise<Object> => {};
+const handleServerUp = async (req: HttpRequest): Promise<Object> => {
+  const response: AxiosResponse = await requestAction('start')
 
-const handleServerDown = async (req: HttpRequest): Promise<Object> => {};
+};
 
-const handleGetIp = async (req: HttpRequest): Promise<Object> => {};
+const handleServerDown = async (req: HttpRequest): Promise<Object> => {
+  const response: AxiosResponse = await requestAction('stop')
 
-const handleGetStatus = async (req: HttpRequest): Promise<Object> => {};
+  
+};
+
+const handleGetIp = async (req: HttpRequest): Promise<Object> => {
+  const response: AxiosResponse = await requestAction('status')
+  
+};
+
+const handleGetStatus = async (req: HttpRequest): Promise<Object> => {
+  const response: AxiosResponse = await requestAction('status')
+  
+
+};
 
 export default handleInteractions;
