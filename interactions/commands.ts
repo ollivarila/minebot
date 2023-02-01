@@ -12,7 +12,7 @@ type SlashCommand = {
 
 const serverUp: SlashCommand = {
   type: ApplicationCommandType.ChatInput,
-  name: "serverUp",
+  name: "serverup",
   description: "Turns the server on if it is off",
 };
 
