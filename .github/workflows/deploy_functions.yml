@@ -8,8 +8,26 @@ on:
 env:
   AZURE_FUNCTIONAPP_NAME: minebot
   NODE_VERSION: "18.x"
+  APPID: ${{ secrets.APPID }}
+  DISCORDTOKEN: ${{ secrets.DISCORDTOKEN }}
 
 jobs:
+  install-commands:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v3"
+      - name: Setup Node ${{ env.NODE_VERSION }} Environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: "Install dependencies"
+        run: "npm install"
+      - name: "Build"
+        run: "npm run build"
+      - name: "Install commmands"
+        run: "node ./dist/utils/installCommands.js"
+
   build-and-deploy-minebot:
     runs-on: ubuntu-latest
     steps:

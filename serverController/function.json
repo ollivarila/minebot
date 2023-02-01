@@ -14,6 +14,5 @@
       "name": "$return"
     }
   ],
-  "scriptFile": "../dist/interactions/index.js"
+  "scriptFile": "../dist/serverController/index.js"
 }
-
