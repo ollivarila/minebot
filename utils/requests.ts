@@ -29,14 +29,36 @@ export const discordRequest = async (
 
 export type ContainerAction = "start" | "stop" | "status";
 
+const getAuth = async (): Promise<string> => {
+  const url = `https://login.microsoftonline.com/${process.env.TENANT_ID}/oauth2/v2.0/token`
+
+  const { CLIENT_ID, CLIENT_SECRET } = process.env
+
+  const data = {
+    "client_id": CLIENT_ID,
+    "client_secret": CLIENT_SECRET,
+    "grant_type": "client_credentials",
+    scope: "https://management.azure.com/.default"
+  }
+
+  try {
+    const response: AxiosResponse = await axios.get(url, { data }) 
+    return response.data["access_token"]
+  } catch (error) {
+    return null;
+  }
+}
+
 export const dispatchContainerAction = async (
   action: ContainerAction
 ): Promise<AxiosResponse> => {
-  const { SUBSCRIPTION_ID, RESOURCE_GROUP, CONTAINER_GROUP, AUTH_TOKEN } =
+  const { SUBSCRIPTION_ID, RESOURCE_GROUP, CONTAINER_GROUP, } =
     process.env;
 
+  const token = await getAuth()
+
   const headers: RawAxiosRequestHeaders = {
-    Authorization: AUTH_TOKEN,
+    Authorization: `Bearer ${token}`,
   };
 
   if (action === "status") {
@@ -44,8 +66,8 @@ export const dispatchContainerAction = async (
     return axios.get(url, { headers });
   }
 
-  const url: string = `https://management.azure.com/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.ContainerInstance/containerGroups/${CONTAINER_GROUP}/?action=${action}&api-version=2022-10-01-preview`;
-  return axios.put(url, { headers });
+  const url: string = `https://management.azure.com/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.ContainerInstance/containerGroups/${CONTAINER_GROUP}/${action}?api-version=2022-10-01-preview`;
+  return axios.post(url, { headers });
 };
 
 export const requestAction = async (
