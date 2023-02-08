@@ -12,21 +12,17 @@ enum DiscordResponseType {
 const getDiscordResponse = (data: Object, responseType: number): Object => {
   if (responseType === DiscordResponseType.content)
     return {
-      body: {
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: {
-          content: data,
-        },
+      type: InteractionResponseType.ChannelMessageWithSource,
+      data: {
+        content: data,
       },
     };
 
   if (responseType === DiscordResponseType.embed) {
     return {
-      body: {
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: {
-          embeds: [data],
-        },
+      type: InteractionResponseType.ChannelMessageWithSource,
+      data: {
+        embeds: [data],
       },
     };
   }
@@ -98,6 +94,7 @@ const handleGetIp = async (req: HttpRequest): Promise<Object> => {
 const handleGetStatus = async (req: HttpRequest): Promise<Object> => {
   try {
     const response: AxiosResponse = await requestAction("status");
+
     return getDiscordResponse(
       `Server status: ${response.data.state}\nServer ip: ${response.data.ip}`,
       DiscordResponseType.content

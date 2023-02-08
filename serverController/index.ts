@@ -8,10 +8,13 @@ const handleServerRequest: AzureFunction = async (
   context: Context,
   req: HttpRequest
 ): Promise<Object> => {
-  const action: ContainerAction = req.query.action as ContainerAction;
+  const action: ContainerAction = req.body.action as ContainerAction;
 
   if (!action) {
     return {
+      headers: {
+        "content-type": "application/json",
+      },
       status: 400,
       body: {
         error: "invalid action",
@@ -20,7 +23,17 @@ const handleServerRequest: AzureFunction = async (
   }
 
   try {
-    const res: AxiosResponse = await dispatchContainerAction(action);
+    const res: any = await dispatchContainerAction(action);
+
+    return {
+      headers: {
+        "content-type": "application/json",
+      },
+      body: {
+        message: res,
+      },
+    };
+
     switch (action) {
       case "start":
         if (res.status === 202) {
@@ -65,6 +78,9 @@ const handleServerRequest: AzureFunction = async (
         break;
       default:
         return {
+          headers: {
+            "content-type": "application/json",
+          },
           status: 400,
           body: {
             error: "unexpected action",
@@ -72,20 +88,17 @@ const handleServerRequest: AzureFunction = async (
         };
     }
   } catch (error) {
+    console.error(error);
     return {
+      headers: {
+        "content-type": "application/json",
+      },
       status: 500,
       body: {
         error: "something went wrong: " + error.message,
       },
     };
   }
-
-  return {
-    status: 500,
-    body: {
-      error: "something went wrong",
-    },
-  };
 };
 
 export default handleServerRequest;

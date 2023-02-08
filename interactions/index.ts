@@ -8,17 +8,28 @@ const interactionsHandler: AzureFunction = async (
   context: Context,
   req: HttpRequest
 ): Promise<any> => {
+  context.res = {
+    headers: {
+      "content-type": "application/json",
+    },
+  };
   try {
     const verified = await verifyRequest(req);
 
     if (!verified) {
       return {
+        headers: {
+          "content-type": "application/json",
+        },
         status: 401,
         body: "invalid request signature",
       };
     }
   } catch (error) {
     return {
+      headers: {
+        "content-type": "application/json",
+      },
       status: 401,
       body: "invalid request signature",
     };
@@ -28,15 +39,22 @@ const interactionsHandler: AzureFunction = async (
 
   if (type === InteractionType.PING) {
     return {
-      status: 200,
+      headers: {
+        "content-type": "application/json",
+      },
       body: {
         type: InteractionResponseType.PONG,
-        data: undefined,
       },
     };
   }
 
-  return await handleInteractions(req);
+  const body = await handleInteractions(req);
+  return {
+    headers: {
+      "content-type": "application/json",
+    },
+    body,
+  };
 };
 
 export default interactionsHandler;
