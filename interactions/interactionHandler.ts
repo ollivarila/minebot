@@ -9,24 +9,25 @@ enum DiscordResponseType {
   embed,
 }
 
-const getDiscordResponse = (data: Object, responseType: number): Object => {
+const authorizedUsers = ["188329879861723136", "209654420999241728"];
+
+const getDiscordResponse = (
+  data: Object | string,
+  responseType: number
+): Object => {
   if (responseType === DiscordResponseType.content)
     return {
-      body: {
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: {
-          content: data,
-        },
+      type: InteractionResponseType.ChannelMessageWithSource,
+      data: {
+        content: data,
       },
     };
 
   if (responseType === DiscordResponseType.embed) {
     return {
-      body: {
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: {
-          embeds: [data],
-        },
+      type: InteractionResponseType.ChannelMessageWithSource,
+      data: {
+        embeds: [data],
       },
     };
   }
@@ -41,6 +42,17 @@ const handleInteractions = async (req: HttpRequest): Promise<Object> => {
     default:
       break;
   }
+};
+
+const checkIfAuthorized = (req: HttpRequest): boolean => {
+  const requesterId = req.body.member.user.id;
+  let auth = false;
+  authorizedUsers.forEach((userId) => {
+    if (userId === requesterId) {
+      auth = true;
+    }
+  });
+  return auth;
 };
 
 const handleApplicationCommands = async (req: HttpRequest): Promise<Object> => {
@@ -62,30 +74,51 @@ const handleApplicationCommands = async (req: HttpRequest): Promise<Object> => {
   }
 };
 
-const doRequest = async (action: ContainerAction): Promise<Object> => {
+const doRequest = async (
+  action: ContainerAction,
+  replyChannel: string
+): Promise<Object> => {
   try {
-    const response: AxiosResponse = await requestAction("start");
+    requestAction(action, replyChannel);
 
-    return getDiscordResponse(
-      response.data.message,
-      DiscordResponseType.content
-    );
+    const message =
+      action === "start" ? "Server starting..." : "Stopping server...";
+
+    return getDiscordResponse(message, DiscordResponseType.content);
   } catch (error) {
     return getDiscordResponse(error.message, DiscordResponseType.content);
   }
 };
 
 const handleServerUp = async (req: HttpRequest): Promise<Object> => {
-  return doRequest("start");
+  if (!checkIfAuthorized(req)) {
+    return getDiscordResponse(
+      "You are not authorized!",
+      DiscordResponseType.content
+    );
+  }
+
+  const replyChannel = req.body.channel_id;
+
+  return doRequest("start", replyChannel);
 };
 
 const handleServerDown = async (req: HttpRequest): Promise<Object> => {
-  return doRequest("stop");
+  if (!checkIfAuthorized(req)) {
+    return getDiscordResponse(
+      "You are not authorized!",
+      DiscordResponseType.content
+    );
+  }
+
+  const replyChannel = req.body.channel_id;
+
+  return doRequest("stop", replyChannel);
 };
 
 const handleGetIp = async (req: HttpRequest): Promise<Object> => {
   try {
-    const response: AxiosResponse = await requestAction("status");
+    const response: AxiosResponse = await requestAction("status", undefined);
     return getDiscordResponse(
       `Server ip: ${response.data.ip}`,
       DiscordResponseType.content
@@ -97,7 +130,8 @@ const handleGetIp = async (req: HttpRequest): Promise<Object> => {
 
 const handleGetStatus = async (req: HttpRequest): Promise<Object> => {
   try {
-    const response: AxiosResponse = await requestAction("status");
+    const response: AxiosResponse = await requestAction("status", undefined);
+
     return getDiscordResponse(
       `Server status: ${response.data.state}\nServer ip: ${response.data.ip}`,
       DiscordResponseType.content

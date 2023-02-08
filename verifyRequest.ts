@@ -14,7 +14,7 @@ const verifyRequest = async (req: HttpRequest) => {
     req.rawBody,
     signature,
     timestamp,
-    process.env.CLIENT_PUBLIC_KEY
+    process.env.BOT_PUBLIC_KEY
   );
 };
 
