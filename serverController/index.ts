@@ -53,16 +53,22 @@ const handleServerRequest: AzureFunction = async (
             "Server startup confirmed \n Please wait a moment before joining",
             replyChannel
           );
-        }
-
-        if (res.status === 204) {
+        } else if (res.status === 204) {
           sendReplyToChannel("Server is already running", replyChannel);
+        } else {
+          sendReplyToChannel("Something unexpected happened", replyChannel);
         }
 
         return {
           status: 200,
         };
       case "stop":
+        if (res.status === 204) {
+          sendReplyToChannel("Server stopped", replyChannel);
+        } else {
+          sendReplyToChannel("Something unexpected happened", replyChannel);
+        }
+
         return {
           status: 200,
         };
