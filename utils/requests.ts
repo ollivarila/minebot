@@ -1,10 +1,10 @@
 import axios, {
+  AxiosRequestConfig,
   AxiosRequestHeaders,
   AxiosResponse,
   RawAxiosRequestHeaders,
 } from "axios";
-import { ContainerInstanceManagementClient } from "@azure/arm-containerinstance";
-import { DefaultAzureCredential } from "@azure/identity";
+import qs = require("qs");
 
 import dotenv = require("dotenv");
 
@@ -12,7 +12,7 @@ dotenv.config();
 
 export const discordRequest = async (
   endpoint: string,
-  options: Object
+  options: AxiosRequestConfig
 ): Promise<AxiosResponse> => {
   const baseurl = "https://discord.com/api/v10";
 
@@ -47,23 +47,35 @@ const getAuth = async (): Promise<string> => {
     scope: "https://management.azure.com/.default",
   };
 
+  const headers = {
+    "content-type": "application/x-www-form-urlencoded",
+  };
+
+  // const data = new FormData();
+  // data.append("client_id", CLIENT_ID);
+  // data.append("client_secret", CLIENT_SECRET);
+  // data.append("grant_type", "client_credentials");
+  // data.append("scope", "https://management.azure.com/.default");
+
   try {
-    const response: AxiosResponse = await axios.get(url, { data });
+    const response: AxiosResponse = await axios.post(url, qs.stringify(data), {
+      headers,
+    });
     return response.data["access_token"];
   } catch (error) {
-    console.log(error);
+    console.log(error.message);
     return null;
   }
 };
 
 export const dispatchContainerAction = async (
   action: ContainerAction
-): Promise<string> => {
+): Promise<AxiosResponse> => {
   const { SUBSCRIPTION_ID, RESOURCE_GROUP, CONTAINER_GROUP } = process.env;
   const token = await getAuth();
 
   if (!token) {
-    return "Error with token";
+    throw new Error("Error with token");
   }
 
   const headers: RawAxiosRequestHeaders = {
@@ -76,16 +88,17 @@ export const dispatchContainerAction = async (
   }
 
   const url: string = `https://management.azure.com/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.ContainerInstance/containerGroups/${CONTAINER_GROUP}/${action}?api-version=2022-10-01-preview`;
-  return axios.post(url, { headers });
+  return axios.post(url, undefined, { headers });
 };
 
 export const requestAction = async (
-  action: ContainerAction
+  action: ContainerAction,
+  replyChannel: string
 ): Promise<AxiosResponse> => {
   const url =
     process.env.NODE_ENV === "development"
       ? "http://localhost:7071/api/server"
       : `https://minebot.azurewebsites.net/api/server`;
 
-  return axios.post(url, { action });
+  return axios.post(url, { action, replyChannel });
 };
