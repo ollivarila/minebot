@@ -98,7 +98,7 @@ export const requestAction = async (
   const url =
     process.env.NODE_ENV === "development"
       ? "http://localhost:7071/api/server"
-      : `https://minebot.azurewebsites.net/api/server`;
+      : `https://minebot.azurewebsites.net/api/server?code=${process.env.FUNCTION_API_KEY}`;
 
   return axios.post(url, { action, replyChannel });
 };
