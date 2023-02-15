@@ -9,7 +9,14 @@ enum DiscordResponseType {
   embed,
 }
 
-const authorizedUsers = ["188329879861723136", "209654420999241728"];
+const authorizedUsers = [
+  "188329879861723136",
+  "209654420999241728",
+  "208247677585063936",
+  "430991331880337408",
+  "182935119625977867",
+  "405711174668124160",
+];
 
 const getDiscordResponse = (
   data: Object | string,
